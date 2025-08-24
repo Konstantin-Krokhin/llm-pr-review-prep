@@ -1,0 +1,13 @@
+# Environment files
+.env
+
+# OS / IDE junk
+.DS_Store
+*.swp
+*.swo
+
+# Python stuff
+__pycache__/
+*.pyc
+.venv/
+.vscode/

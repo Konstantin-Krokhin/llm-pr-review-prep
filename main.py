@@ -26,4 +26,5 @@ def handle_request(request_data) -> str:
         return {"error": "Document not found"}
 
 if __name__ == "__main__":
-	handle_request(request_data)
+    request_data = {QUERY: "test"}
+    handle_request(request_data)

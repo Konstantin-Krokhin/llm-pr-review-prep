@@ -1,4 +1,4 @@
-import DOC_CONTENT from constants.py
+from constants import DOC_CONTENT 
 from gemini_query_processor import GeminiQueryProcessor 
 
 """
@@ -21,7 +21,7 @@ class DocumentHandler:
     def search_documents(self, query) -> dict | None:
         processor = GeminiQueryProcessor()
         # Returns the first document that contains the query string
-        if documents is None:
+        if not self.documents:
             return None
         # Check query against the bad input
         processor.query_validation(query)

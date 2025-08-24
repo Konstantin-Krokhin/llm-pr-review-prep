@@ -1,0 +1,1 @@
+These are the notes for the global changes of the project

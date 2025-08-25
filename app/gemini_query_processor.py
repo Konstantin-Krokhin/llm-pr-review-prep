@@ -4,7 +4,7 @@ import re
 from dotenv import load_dotenv
 import logging
 
-# Load env viriables
+# Load env variables
 load_dotenv()
 # Setup basic logging
 logging.basicConfig(level = logging.INFO)
@@ -59,6 +59,7 @@ class GeminiQueryProcessor:
             status_code = e.response.status_code if e.response else 0
             logging.error(f"HTTP error {status_code}")
             if e.response is not None:
+                logging.error(f"API response text: {e.response.text}")
                 print(e.response.status_code)
                 print(e.response.text)  # often explains why the key is invalid or permission denied
 

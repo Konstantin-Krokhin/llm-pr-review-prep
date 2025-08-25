@@ -17,8 +17,13 @@ def handle_request(request_data) -> str:
     handler.add_document({"title": "Doc2", "content": "Another document content."})
 
 
+    # --- Extract query from request (validation) ---
+    if "query" not in request_data:
+    return {"error": "Missing 'query' in request"}, 400 
+
     query = request_data[QUERY]
     doc = handler.search_documents(query)
+
     if doc:
         result = processor.query_model(doc[DOC_CONTENT])
         return result
@@ -26,5 +31,7 @@ def handle_request(request_data) -> str:
         return {"error": "Document not found"}
 
 if __name__ == "__main__":
-    request_data = {QUERY: "test"}
-    handle_request(request_data)
+    request = {"query": "test"}
+    response, code = handle_request(request)
+    print("HTTP code:", code)
+    print("Response:", response)

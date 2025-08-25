@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+python-dotenv
+pydantic
+requests-mock
+pytest
+pytest-cov
+numpy

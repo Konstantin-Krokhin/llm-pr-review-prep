@@ -1,6 +1,7 @@
 from document_handler import DocumentHandler 
 from constants import DOC_CONTENT, QUERY 
-from gemini_query_processor import GeminiQueryProcessor 
+from gemini_query_processor import GeminiQueryProcessor
+from typing import Tuple, Dict
 
 """"
 
@@ -8,7 +9,7 @@ Main program file that handles user requests
 
 """
 
-def handle_request(request_data) -> str:
+def handle_request(request_data) -> Tuple[Dict, int]:
     processor = GeminiQueryProcessor()
     handler = DocumentHandler()
 
@@ -19,19 +20,18 @@ def handle_request(request_data) -> str:
 
     # --- Extract query from request (validation) ---
     if "query" not in request_data:
-    return {"error": "Missing 'query' in request"}, 400 
+        return {"error": "Missing 'query' in request"}
 
     query = request_data[QUERY]
     doc = handler.search_documents(query)
 
     if doc:
         result = processor.query_model(doc[DOC_CONTENT])
-        return result
+        return result, 200
     else:
-        return {"error": "Document not found"}
+        return {"error": "Document not found"}, 404
 
 if __name__ == "__main__":
     request = {"query": "test"}
     response, code = handle_request(request)
-    print("HTTP code:", code)
     print("Response:", response)

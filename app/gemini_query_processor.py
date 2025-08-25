@@ -2,6 +2,7 @@ import requests
 import os
 import re
 from dotenv import load_dotenv
+import logging
 
 # Load env viriables
 load_dotenv()
@@ -21,30 +22,63 @@ class GeminiQueryProcessor:
             raise ValueError(f"GEMINI_API_KEY env variable is missing (GeminiQueryProcessor class: __init__ func)\n")
 
         # Base API
-        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" 
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 
-    def query_model(self, prompt) -> str:
-        # Sends a request to Gemini API and returns the response
-        # Check response if server down
+    def query_model(self, prompt: str) -> tuple[dict, int]:
+
         try:
-            response = requests.post(self.api_url, json={"prompt": prompt, "key": self.api_key}, timeout = 5)
+            # --- Send POST request and store response ---
+            response = requests.post(
+                self.api_url,
+                headers={"x-goog-api-key": self.api_key},
+                json={"contents": [{"role": "user", "parts": [{"text": prompt}]}]},
+                timeout=5
+            )
+
+            # --- Raise HTTPError for 4xx/5xx ---
             response.raise_for_status()
+
+            # --- Success ---
             if response.status_code == 200:
                 logging.info("Request successful")
-                return response.json()
+                return response.json(), 200
+
+        # --- Handle timeouts ---
+        except requests.exceptions.Timeout:
+            logging.error("Request timed out")
+            return {"error": "Timeout"}, 0
+
+        # --- Handle connection errors ---
+        except requests.exceptions.ConnectionError:
+            logging.error("Connection failed")
+            return {"error": "Connection error"}, 0
+
+        # --- Handle HTTP errors ---
         except requests.exceptions.HTTPError as e:
-            status_code = e.response.status_code
+            status_code = e.response.status_code if e.response else 0
+            logging.error(f"HTTP error {status_code}")
+            if e.response is not None:
+                print(e.response.status_code)
+                print(e.response.text)  # often explains why the key is invalid or permission denied
+
             if status_code == 404:
-                logging.error("Not found 404")
-                return {"error": "Endpoint not found (404)"}
+                return {"error": "Endpoint not found (404)"}, 404
             elif status_code == 400:
-                logging.error("Bad request (400)")
-                return {"error": "Bad request"}
+                return {"error": "Bad request (400)"}, 400
             else:
-                logging.error(f"Unexpected error: {response.status_code}")
-                return {"error": f"Unexpected {response.status_code}"}
-            #raise RuntimeError(f"Wrong query response, status: {e}")
+                return {"error": f"Unexpected {status_code}"}, status_code
+
+        # --- Catch all other request exceptions ---
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Request failed: {e}")
+            return {"error": "Request failed"}, 0
+
+    def get_document(title: str):
+        for doc in handler.documents:
+            if doc["title"] == title:
+                return doc
+        return {"error": "Document not found"}, 404
 
     def query_validation(self, query) -> None:
         # Allow safe chars length
